@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
@@ -80,9 +81,16 @@ public final class WgpfRecordStore implements ImmutablePayloadStore {
                 while (buffer.hasRemaining()) channel.write(buffer);
                 channel.force(true);
             }
-            // Deliberately fail rather than silently falling back to a non-atomic publish.
-            Files.move(temporary, destination, StandardCopyOption.ATOMIC_MOVE);
-            temporary = null;
+            // An atomic move may REPLACE an existing target on some filesystems,
+            // even when REPLACE_EXISTING is absent. The hard-link operation is
+            // an atomic create-if-absent on the same filesystem (temp shares dir).
+            // This never replaces an already committed immutable UUID.
+            try {
+                Files.createLink(destination, temporary);
+            } catch (FileAlreadyExistsException collision) {
+                assertSame(id, payload, read(id));
+                return false;
+            }
             assertSame(id, payload, read(id));
             return true;
         } catch (IOException ex) {
