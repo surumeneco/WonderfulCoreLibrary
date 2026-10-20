@@ -73,4 +73,30 @@ class WgpfRecordStoreTest {
         first.close();
         assertTrue(b.importVerified(id, a.read(id)));
     }
+    @Test void concurrentDifferentImportsNeverOverwritePublishedUuid() throws Exception {
+        UUID id = UUID.randomUUID();
+        var first = new WgpfRecordStore(temp.resolve("race"));
+        var second = new WgpfRecordStore(temp.resolve("race"));
+        var barrier = new java.util.concurrent.CyclicBarrier(2);
+        try (var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
+            var a = executor.submit(() -> {
+                barrier.await();
+                try { first.importVerified(id, new ImmutablePayloadStore.Payload(new byte[]{1}, PHENOTYPE)); }
+                catch (IllegalStateException expected) { }
+                return true;
+            });
+            var b = executor.submit(() -> {
+                barrier.await();
+                try { second.importVerified(id, new ImmutablePayloadStore.Payload(new byte[]{2}, PHENOTYPE)); }
+                catch (IllegalStateException expected) { }
+                return true;
+            });
+            assertTrue(a.get());
+            assertTrue(b.get());
+        }
+        byte[] winner = first.read(id).genome();
+        assertTrue(java.util.Arrays.equals(winner, new byte[]{1})
+                || java.util.Arrays.equals(winner, new byte[]{2}));
+    }
+
 }
