@@ -11,6 +11,11 @@ public final class DefaultConsumerContext implements ConsumerContext {
     private final List<AutoCloseable> resources = new ArrayList<>();
     private boolean closed;
 
+    @Override public co.surumene.wcl.api.persistence.ImmutablePayloadStore newPayloadStore(java.nio.file.Path directory) {
+        ensureOpen();
+        return new co.surumene.wcl.core.persistence.WgpfRecordStore(directory);
+    }
+
     @Override public <K> WorkIndex<K> newWorkIndex() {
         ensureOpen();
         WorkIndex<K> index = new DefaultWorkIndex<>();
