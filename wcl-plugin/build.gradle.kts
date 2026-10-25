@@ -23,3 +23,7 @@ val verifyStandalonePluginJar by tasks.registering {
 }
 
 tasks.named("check") { dependsOn(verifyStandalonePluginJar) }
+
+dependencies {
+    testImplementation("org.mockito:mockito-core:5.20.0")
+}
