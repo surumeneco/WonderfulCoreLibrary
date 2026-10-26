@@ -14,7 +14,7 @@ final class AgeDeadlineMathTest {
     @Test void negativeStartBoundaryGuardPreservesLegacyVersusGuardedPolicy(){
         assertEquals(Long.MAX_VALUE,AgeDeadlineMath.next(24000,Long.MIN_VALUE,
                 0.0,1.0,2.0,List.of(),AgeDeadlineMath.BoundaryMode.LEGACY));
-        assertEquals(Long.MAX_VALUE,AgeDeadlineMath.next(24000,Long.MIN_VALUE,
+        assertEquals(Long.MIN_VALUE + 24000L,AgeDeadlineMath.next(24000,Long.MIN_VALUE,
                 0.0,1.0,2.0,List.of(),AgeDeadlineMath.BoundaryMode.GUARDED));
     }
 }
