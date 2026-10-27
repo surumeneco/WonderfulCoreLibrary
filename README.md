@@ -31,15 +31,17 @@ The authoritative cross-plugin [responsibility and extraction design](https://dr
 - SNBT-like parser and biological clock/state implementation.
 - Paper time-skip listener adapter, biological-clock YAML store, and nearby-player query.
 - Age curve and age-deadline math, normalized rank index; consumer-specific compatibility behavior remains explicit.
-- Config-key path suggestions; **not** a shared config file or complete config validator.
+- Config-key path suggestions and finite/range/probability numeric predicates; **not** a shared config file or loader.
 - Read-only inventory storage snapshot/result contracts, with WWC and WWW provider adapters in their respective repositories.
 - Consumer-owned `BoundedDispatchQueue`: FIFO bounded founder submissions, validity predicate when required, cancellation/removal and rejected-head restoration.
+- Species-neutral repath and potion refresh decisions, with threshold and active effect ownership in consumers.
+- Founder bounded-normal sampling and trait selection (strict random draw order); common breeding arithmetic and trap time/probability/circular-offset primitives. Product-specific values, event sources and WGL codec remain outside WCL.
 
 Each extraction has corresponding library tests, with consumer integration covered by WWC/WWW regression tests and CI. The above is **repository integration status**, not a claim of live-server verification. Version `0.1.0` is an unreleased validation candidate, not a published tag.
 
 ## Not yet fully extracted or proven
 
-- Broader config numeric/value validators, potion conflict rules, navigation replan decisions, founder distributions, trait selection, and breeding math.
+- Rich config schema and YAML merge/reload logic, species-specific founder target assembly, physical genome operations and breeding constraints (WGL-owned), trait semantics and effect application.
 - Consumer-specific Entity/AI/PDC, inventory mutations, presentation, trap runtimes and full Genome workflows (not planned for blanket migration).
 - Complete Paper enable/disable/reload regression, JE/BE field behavior, A/B CPU/MSPT and allocation comparisons, and production release.
 
