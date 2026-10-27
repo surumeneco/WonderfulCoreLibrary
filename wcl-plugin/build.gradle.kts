@@ -16,6 +16,7 @@ val verifyStandalonePluginJar by tasks.registering {
         val resource = contents.matching { include("plugin.yml") }.singleFile.readText()
         check(resource.contains("name: WonderfulCoreLibrary"))
         check(!resource.contains("\${version}")) { "Unexpanded plugin version" }
+        check(!resource.contains("SNAPSHOT")) { "Release-candidate JAR must not use a SNAPSHOT version" }
         check(contents.matching { include("config.yml") }.files.isEmpty()) {
             "WCL must not have an independent config.yml"
         }

@@ -2,7 +2,7 @@
 
 Shared Paper/Java runtime primitives for [WhatAWonderfulChicken](https://github.com/surumeneco/WhatAWonderfulChicken) (WWC) and [WhatAWonderfulWolf](https://github.com/surumeneco/WhatAWonderfulWolf) (WWW).
 
-**Development only:** `develop` contains experimental integrations for WWC 2.1.0 / WWW 1.1.0. The WCL deployable version is still `0.1.0-SNAPSHOT`; `main` has not been updated for a production release. Successful CI does not replace Paper server/JE/BE testing or CPU/MSPT measurements.
+**Release candidate only:** `develop` builds WCL `0.1.0` for integration checks alongside WWC `2.1.0` and WWW `1.1.0`. `main` is unchanged, and this is not a production release before Paper/JE/BE and performance acceptance. Successful CI does not replace Paper server/JE/BE testing or CPU/MSPT measurements.
 
 The authoritative cross-plugin [responsibility and extraction design](https://drive.google.com/file/d/1c5rIsZN22smILI8VEhuxWB3j8ePPZE_B/view) specifies the compatibility and ownership boundaries. Validate implementation facts against the current `develop` source, not an earlier proposal's historical commit table.
 
@@ -22,7 +22,7 @@ The authoritative cross-plugin [responsibility and extraction design](https://dr
 | `wcl-core` | Java runtime indexes, scoped lifecycle, and WGPF payload storage |
 | `wcl-plugin` | Paper bootstrap, Bukkit service, nearby search, time-skip/YAML adapters and other Paper integration |
 
-**Deploy only** `wcl-plugin/build/libs/WonderfulCoreLibrary-0.1.0-SNAPSHOT.jar`. Its output bundles WCL API and core classes; do not deploy the API/core JARs separately. WWC/WWW compile against WCL without embedding its classes and declare the runtime plugin as a dependency.
+**Deploy only** `wcl-plugin/build/libs/WonderfulCoreLibrary-0.1.0.jar`. Its output bundles WCL API and core classes; do not deploy the API/core JARs separately. WWC/WWW compile against WCL without embedding its classes and declare the runtime plugin as a dependency.
 
 ## Implemented on `develop` (2026-10-27 verification)
 
@@ -35,7 +35,7 @@ The authoritative cross-plugin [responsibility and extraction design](https://dr
 - Read-only inventory storage snapshot/result contracts, with WWC and WWW provider adapters in their respective repositories.
 - Consumer-owned `BoundedDispatchQueue`: FIFO bounded founder submissions, validity predicate when required, cancellation/removal and rejected-head restoration.
 
-Each extraction has corresponding library tests, with consumer integration covered by WWC/WWW regression tests and CI. The above is **repository integration status**, not a claim of live-server verification.
+Each extraction has corresponding library tests, with consumer integration covered by WWC/WWW regression tests and CI. The above is **repository integration status**, not a claim of live-server verification. Version `0.1.0` is an unreleased validation candidate, not a published tag.
 
 ## Not yet fully extracted or proven
 
