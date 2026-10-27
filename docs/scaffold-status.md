@@ -1,4 +1,6 @@
-# WCL scaffold status (2026-10-19)
+# WCL scaffold status (2026-10-19) — historical snapshot
+
+> **Historical record.** This describes the first scaffold as of 2026-10-19, not the current `develop` implementation. Biological clock, YAML/TimeSkip, WGPF, SNBT, age/deadline/rank, storage read contracts, nearby-player query, config-key suggestions, and bounded founder dispatch have since been added with consumer integrations. See [the repository README](../README.md) and current code/CI for verified development status; Paper field behavior and production release are separate gates.
 
 ## Implemented in this prototype
 

@@ -1,61 +1,71 @@
 # WonderfulCoreLibrary (WCL)
 
-**Development scaffold — not a functional WWC/WWW replacement.**
+Shared Paper/Java runtime primitives for [WhatAWonderfulChicken](https://github.com/surumeneco/WhatAWonderfulChicken) (WWC) and [WhatAWonderfulWolf](https://github.com/surumeneco/WhatAWonderfulWolf) (WWW).
 
-Paper 26.2 / Java 25 library plugin for shared Minecraft runtime primitives used by
-[WhatAWonderfulChicken](https://github.com/surumeneco/WhatAWonderfulChicken) and
-[WhatAWonderfulWolf](https://github.com/surumeneco/WhatAWonderfulWolf).
+**Development only:** `develop` contains experimental integrations for WWC 2.1.0 / WWW 1.1.0. The WCL deployable version is still `0.1.0-SNAPSHOT`; `main` has not been updated for a production release. Successful CI does not replace Paper server/JE/BE testing or CPU/MSPT measurements.
 
-The cross-plugin design source of truth is the [WCL responsibility and extraction proposal](https://drive.google.com/file/d/1c5rIsZN22smILI8VEhuxWB3j8ePPZE_B/view).
+The authoritative cross-plugin [responsibility and extraction design](https://drive.google.com/file/d/1c5rIsZN22smILI8VEhuxWB3j8ePPZE_B/view) specifies the compatibility and ownership boundaries. Validate implementation facts against the current `develop` source, not an earlier proposal's historical commit table.
 
 ## Boundaries
 
-- **No config.yml, lang, user data, or game balance defaults.** Each consumer owns its own configuration, PDC keys, data location and gameplay behavior.
-- **No dependency on WGL.** The consumers will connect WCL and WGL independently. Genome synthesis, decoding and mutation remain entirely in WGL.
-- **Per-consumer isolation.** The API exposes consumer-owned, closable contexts, never one shared cross-plugin entity index.
-- **No automatic world scans or timers.** Consumers decide which entities to watch and when to schedule work.
-- This scaffold **does not yet migrate any logic from WWC/WWW**. Only generic in-memory work indexes and active membership collections have working implementations.
+- **No WCL-owned config.yml, lang, gameplay defaults, Entity/PDC ownership, or consumer world data.** Each consumer supplies policy, keys, paths, clock, and runtime decisions.
+- **WGL remains independent.** Genome synthesis, decoding, mutation, marker computation, and physical constraints are WGL's responsibility. WCL does not depend on WGL.
+- **Per-consumer isolation.** `ConsumerContext` owns closable `WorkIndex` and `ActiveMembership` instances. Consumers retain scheduling, identity checks, worker executors, Paper-thread constraints, lifecycle and rollback responsibilities.
+- **No automatic world scans, global tick tasks, or background job dispatch.** WCL helpers operate only when invoked by a consumer.
+- Preserve saved formats and product-specific semantics. Extraction alone is not a performance optimization claim.
 
-## Modules
+## Modules and distribution
 
-| Module | Role |
+| Module | Responsibility |
 | --- | --- |
-| wcl-api | Public Java/Paper-independent contracts |
-| wcl-core | Pure-Java runtime primitives and scoped lifecycle |
-| wcl-plugin | Paper bootstrap, ServicesManager service and owner-disable cleanup |
+| `wcl-api` | Shared contracts and portable decision/queue/value helpers |
+| `wcl-core` | Java runtime indexes, scoped lifecycle, and WGPF payload storage |
+| `wcl-plugin` | Paper bootstrap, Bukkit service, nearby search, time-skip/YAML adapters and other Paper integration |
 
-The **single deployable** plugin JAR is wcl-plugin/build/libs/WonderfulCoreLibrary-0.1.0-SNAPSHOT.jar (its jar bundles WCL API and core classes). Do **not** deploy the individual API/core JARs.
+**Deploy only** `wcl-plugin/build/libs/WonderfulCoreLibrary-0.1.0-SNAPSHOT.jar`. Its output bundles WCL API and core classes; do not deploy the API/core JARs separately. WWC/WWW compile against WCL without embedding its classes and declare the runtime plugin as a dependency.
 
-## Build
+## Implemented on `develop` (2026-10-27 verification)
 
-Require JDK 25 and Gradle 9.1+:
+- Consumer-local `WorkIndex`, `ActiveMembership`, and plugin lifecycle context.
+- WGPF v1 external payload primitives; consumer-specific world paths and migration remain consumer-owned.
+- SNBT-like parser and biological clock/state implementation.
+- Paper time-skip listener adapter, biological-clock YAML store, and nearby-player query.
+- Age curve and age-deadline math, normalized rank index; consumer-specific compatibility behavior remains explicit.
+- Config-key path suggestions; **not** a shared config file or complete config validator.
+- Read-only inventory storage snapshot/result contracts, with WWC and WWW provider adapters in their respective repositories.
+- Consumer-owned `BoundedDispatchQueue`: FIFO bounded founder submissions, validity predicate when required, cancellation/removal and rejected-head restoration.
 
-    gradle clean build --no-daemon
+Each extraction has corresponding library tests, with consumer integration covered by WWC/WWW regression tests and CI. The above is **repository integration status**, not a claim of live-server verification.
 
-GitHub Actions builds on JDK 25 and verifies the single deployable JAR.
+## Not yet fully extracted or proven
 
-## Consumer API example (illustrative; migration not done)
+- Broader config numeric/value validators, potion conflict rules, navigation replan decisions, founder distributions, trait selection, and breeding math.
+- Consumer-specific Entity/AI/PDC, inventory mutations, presentation, trap runtimes and full Genome workflows (not planned for blanket migration).
+- Complete Paper enable/disable/reload regression, JE/BE field behavior, A/B CPU/MSPT and allocation comparisons, and production release.
 
-    WonderfulCoreLibraryService service = Bukkit.getServicesManager()
-            .load(WonderfulCoreLibraryService.class);
-    if (service == null) throw new IllegalStateException("WCL service unavailable");
+These are potential work units and verification gates; see the design for A/B/C/D classification. Avoid changing gameplay rules or time/probability semantics merely to reduce duplicate code.
 
-    ConsumerContext context = service.openContext(this);
-    WorkIndex<UUID> refresh = context.newWorkIndex();
-    refresh.markDirty(entityId);
-    Set<UUID> changed = refresh.takeReady(serverTick);
+## Build and integration
 
-The consumer itself validates entity identity, dispatches Paper operations, and closes its context.
+JDK 25, Gradle 9.1+:
 
-After a future integration, WWC/WWW will declare depend: [WonderfulGenomeLib, WonderfulCoreLibrary] and compile against WCL. **Do not add that dependency before a functionality-preserving migration is ready.**
+```sh
+gradle clean build --no-daemon
+```
 
-## Planned extraction (not implemented)
+GitHub Actions builds the three modules and checks the single deployable plugin artifact. Consumer CI checks out WGL and WCL at `develop` beside the consumer repository and uses Gradle composite builds; local consumer builds require the same sibling checkout layout.
 
-1. Biological clock and state-store adapters
-2. External immutable Genome/Phenotype payload store preserving WGPF v1 bytes
-3. Age and rank evaluation with explicit compatibility tests for existing edge cases
-4. Bounded async founder dispatch and stale-entity validation
-5. Config-value validation helpers and nearby-search/potion policies
-6. Consumer-specific adapters for persistence, appearance, AI, traps, GUI and breeding
+To obtain WCL runtime services on Paper, a consumer can use Bukkit `ServicesManager`:
 
-See [scaffold-status.md](docs/scaffold-status.md) for what exists and what is deliberately deferred.
+```java
+WonderfulCoreLibraryService service =
+        Bukkit.getServicesManager().load(WonderfulCoreLibraryService.class);
+if (service == null) {
+    throw new IllegalStateException("WCL service unavailable");
+}
+ConsumerContext context = service.openContext(this);
+```
+
+The owning consumer closes its context and validates main-thread/lifecycle access. WCL itself does not schedule individual jobs.
+
+The original [2026-10-19 scaffold snapshot](docs/scaffold-status.md) is historical. It is not the current implementation checklist.
