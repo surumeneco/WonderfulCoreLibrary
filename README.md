@@ -1,1 +1,73 @@
-# WonderfulCoreLibrary
+# WonderfulCoreLibrary (WCL)
+
+Shared Paper/Java runtime primitives for [WhatAWonderfulChicken](https://github.com/surumeneco/WhatAWonderfulChicken) (WWC) and [WhatAWonderfulWolf](https://github.com/surumeneco/WhatAWonderfulWolf) (WWW).
+
+**Release version:** WCL `0.1.0` is the companion runtime library for WWC `2.1.0` and WWW `1.1.0`. The release branch is `main`; `develop` remains the integration branch. Automated builds and regression tests have passed, but Paper/JE/BE live-server checks and CPU/MSPT comparisons remain separate acceptance evidence.
+
+The authoritative cross-plugin [responsibility and extraction design](https://drive.google.com/file/d/1c5rIsZN22smILI8VEhuxWB3j8ePPZE_B/view) specifies the compatibility and ownership boundaries. Validate implementation facts against the current `develop` source, not an earlier proposal's historical commit table.
+
+## Boundaries
+
+- **No WCL-owned config.yml, lang, gameplay defaults, Entity/PDC ownership, or consumer world data.** Each consumer supplies policy, keys, paths, clock, and runtime decisions.
+- **WGL remains independent.** Genome synthesis, decoding, mutation, marker computation, and physical constraints are WGL's responsibility. WCL does not depend on WGL.
+- **Per-consumer isolation.** `ConsumerContext` owns closable `WorkIndex` and `ActiveMembership` instances. Consumers retain scheduling, identity checks, worker executors, Paper-thread constraints, lifecycle and rollback responsibilities.
+- **No automatic world scans, global tick tasks, or background job dispatch.** WCL helpers operate only when invoked by a consumer.
+- Preserve saved formats and product-specific semantics. Extraction alone is not a performance optimization claim.
+
+## Modules and distribution
+
+| Module | Responsibility |
+| --- | --- |
+| `wcl-api` | Shared contracts and portable decision/queue/value helpers |
+| `wcl-core` | Java runtime indexes, scoped lifecycle, and WGPF payload storage |
+| `wcl-plugin` | Paper bootstrap, Bukkit service, nearby search, time-skip/YAML adapters and other Paper integration |
+
+**Deploy only** `wcl-plugin/build/libs/WonderfulCoreLibrary-0.1.0.jar`. Its output bundles WCL API and core classes; do not deploy the API/core JARs separately. WWC/WWW compile against WCL without embedding its classes and declare the runtime plugin as a dependency.
+
+## Included in WCL 0.1.0
+
+- Consumer-local `WorkIndex`, `ActiveMembership`, and plugin lifecycle context.
+- WGPF v1 external payload primitives; consumer-specific world paths and migration remain consumer-owned.
+- SNBT-like parser and biological clock/state implementation.
+- Paper time-skip listener adapter, biological-clock YAML store, and nearby-player query.
+- Age curve and age-deadline math, normalized rank index; consumer-specific compatibility behavior remains explicit.
+- Config-key path suggestions and finite/range/probability numeric predicates; **not** a shared config file or loader.
+- Read-only inventory storage snapshot/result contracts, with WWC and WWW provider adapters in their respective repositories.
+- Consumer-owned `BoundedDispatchQueue`: FIFO bounded founder submissions, validity predicate when required, cancellation/removal and rejected-head restoration.
+- Species-neutral repath and potion refresh decisions, with threshold and active effect ownership in consumers.
+- Founder bounded-normal sampling and trait selection (strict random draw order); common breeding arithmetic and trap time/probability/circular-offset primitives. Product-specific values, event sources and WGL codec remain outside WCL.
+
+Each extraction has corresponding library tests, with consumer integration covered by WWC/WWW regression tests and CI. The above is **repository integration status**, not a claim of live-server verification. WCL 0.1.0 includes the potion refresh fix for Paper's `-1` infinite duration sentinel. An equal or stronger indefinite effect is retained; stronger requested effects may still replace weaker indefinite effects. Consumer-specific thresholds remain unchanged.
+
+## Not yet fully extracted or proven
+
+- Rich config schema and YAML merge/reload logic, species-specific founder target assembly, physical genome operations and breeding constraints (WGL-owned), trait semantics and effect application.
+- Consumer-specific Entity/AI/PDC, inventory mutations, presentation, trap runtimes and full Genome workflows (not planned for blanket migration).
+- Complete Paper enable/disable/reload regression, JE/BE field behavior, and A/B CPU/MSPT and allocation comparisons (independent of the source release).
+
+These are potential work units and verification gates; see the design for A/B/C/D classification. Avoid changing gameplay rules or time/probability semantics merely to reduce duplicate code.
+
+## Build and integration
+
+JDK 25, Gradle 9.1+:
+
+```sh
+gradle clean build --no-daemon
+```
+
+GitHub Actions builds the three modules and checks the single deployable plugin artifact. Consumer CI checks out WGL and WCL at `develop` beside the consumer repository and uses Gradle composite builds; local consumer builds require the same sibling checkout layout.
+
+To obtain WCL runtime services on Paper, a consumer can use Bukkit `ServicesManager`:
+
+```java
+WonderfulCoreLibraryService service =
+        Bukkit.getServicesManager().load(WonderfulCoreLibraryService.class);
+if (service == null) {
+    throw new IllegalStateException("WCL service unavailable");
+}
+ConsumerContext context = service.openContext(this);
+```
+
+The owning consumer closes its context and validates main-thread/lifecycle access. WCL itself does not schedule individual jobs.
+
+The original [2026-10-19 scaffold snapshot](docs/scaffold-status.md) is historical. It is not the current implementation checklist.

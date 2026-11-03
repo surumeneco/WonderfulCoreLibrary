@@ -1,0 +1,7 @@
+name: WonderfulCoreLibrary
+version: '${version}'
+main: co.surumene.wcl.plugin.WonderfulCoreLibraryPlugin
+api-version: '26.2'
+author: surumeneco
+description: Configuration-free runtime library for Wonderful plugins.
+website: https://github.com/surumeneco/WonderfulCoreLibrary
