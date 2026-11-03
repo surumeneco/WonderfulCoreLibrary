@@ -2,7 +2,7 @@
 
 Shared Paper/Java runtime primitives for [WhatAWonderfulChicken](https://github.com/surumeneco/WhatAWonderfulChicken) (WWC) and [WhatAWonderfulWolf](https://github.com/surumeneco/WhatAWonderfulWolf) (WWW).
 
-**Release candidate only:** `develop` builds WCL `0.1.0` for integration checks alongside WWC `2.1.0` and WWW `1.1.0`. `main` is unchanged, and this is not a production release before Paper/JE/BE and performance acceptance. Successful CI does not replace Paper server/JE/BE testing or CPU/MSPT measurements.
+**Release version:** WCL `0.1.0` is the companion runtime library for WWC `2.1.0` and WWW `1.1.0`. The release branch is `main`; `develop` remains the integration branch. Automated builds and regression tests have passed, but Paper/JE/BE live-server checks and CPU/MSPT comparisons remain separate acceptance evidence.
 
 The authoritative cross-plugin [responsibility and extraction design](https://drive.google.com/file/d/1c5rIsZN22smILI8VEhuxWB3j8ePPZE_B/view) specifies the compatibility and ownership boundaries. Validate implementation facts against the current `develop` source, not an earlier proposal's historical commit table.
 
@@ -24,7 +24,7 @@ The authoritative cross-plugin [responsibility and extraction design](https://dr
 
 **Deploy only** `wcl-plugin/build/libs/WonderfulCoreLibrary-0.1.0.jar`. Its output bundles WCL API and core classes; do not deploy the API/core JARs separately. WWC/WWW compile against WCL without embedding its classes and declare the runtime plugin as a dependency.
 
-## Implemented on `develop` (2026-10-27 verification)
+## Included in WCL 0.1.0
 
 - Consumer-local `WorkIndex`, `ActiveMembership`, and plugin lifecycle context.
 - WGPF v1 external payload primitives; consumer-specific world paths and migration remain consumer-owned.
@@ -37,13 +37,13 @@ The authoritative cross-plugin [responsibility and extraction design](https://dr
 - Species-neutral repath and potion refresh decisions, with threshold and active effect ownership in consumers.
 - Founder bounded-normal sampling and trait selection (strict random draw order); common breeding arithmetic and trap time/probability/circular-offset primitives. Product-specific values, event sources and WGL codec remain outside WCL.
 
-Each extraction has corresponding library tests, with consumer integration covered by WWC/WWW regression tests and CI. The above is **repository integration status**, not a claim of live-server verification. Version `0.1.0` is an unreleased validation candidate, not a published tag.
+Each extraction has corresponding library tests, with consumer integration covered by WWC/WWW regression tests and CI. The above is **repository integration status**, not a claim of live-server verification. WCL 0.1.0 includes the potion refresh fix for Paper's `-1` infinite duration sentinel. An equal or stronger indefinite effect is retained; stronger requested effects may still replace weaker indefinite effects. Consumer-specific thresholds remain unchanged.
 
 ## Not yet fully extracted or proven
 
 - Rich config schema and YAML merge/reload logic, species-specific founder target assembly, physical genome operations and breeding constraints (WGL-owned), trait semantics and effect application.
 - Consumer-specific Entity/AI/PDC, inventory mutations, presentation, trap runtimes and full Genome workflows (not planned for blanket migration).
-- Complete Paper enable/disable/reload regression, JE/BE field behavior, A/B CPU/MSPT and allocation comparisons, and production release.
+- Complete Paper enable/disable/reload regression, JE/BE field behavior, and A/B CPU/MSPT and allocation comparisons (independent of the source release).
 
 These are potential work units and verification gates; see the design for A/B/C/D classification. Avoid changing gameplay rules or time/probability semantics merely to reduce duplicate code.
 
